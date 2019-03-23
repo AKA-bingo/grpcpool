@@ -1,10 +1,11 @@
 # gRPC-pool
 
 ![](https://img.shields.io/badge/language-golang-blue.svg)
-[![Go Report Card](https://goreportcard.com/badge/github.com/AKA-bingo/grpc-pool)](https://goreportcard.com/report/github.com/AKA-bingo/grpc-pool)
+[![Go Report Card](https://goreportcard.com/badge/github.com/AKA-bingo/grpcpool)](https://goreportcard.com/report/github.com/AKA-bingo/grpcpool)
+[![Build Status](https://travis-ci.org/AKA-bingo/grpcpool.svg?branch=master)](https://travis-ci.org/AKA-bingo/grpcpool)
 [![LICENSE](https://img.shields.io/badge/license-Apache2.0-orange.svg)](LICENSE)
 
-gRPC-pool is Used to manage and reuse gRPc connections. You can limit the Usage amount for per connections. 
+grpcpool is Used to manage and reuse gRPc connections. You can limit the Usage amount for per connections. 
 
 ## Install
 
