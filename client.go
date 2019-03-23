@@ -1,4 +1,4 @@
-package gRPC_pool
+package grpcpool
 
 import (
 	"sync"
@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/connectivity"
 )
 
+// ClientConn is the basic unit in the pool
 type ClientConn struct {
 	*grpc.ClientConn
 	pool          *Pool
@@ -52,6 +53,7 @@ func (client *ClientConn) use() {
 	client.mu.Unlock()
 }
 
+// Put return the ClientConn when client call finish
 func (client *ClientConn) Put() {
 	client.mu.Lock()
 	client.inUse--
@@ -69,7 +71,7 @@ func (client *ClientConn) Put() {
 }
 
 // check if the gRPC conn state
-func (client *ClientConn) Active() bool {
+func (client *ClientConn) active() bool {
 	switch client.ClientConn.GetState() {
 	case connectivity.Idle:
 		return true
@@ -94,7 +96,7 @@ func (client *ClientConn) waitForReady() {
 		case <-ticker.C:
 			if client == nil {
 				break
-			} else if client.Active() {
+			} else if client.active() {
 				if client.pool.requestQueue.size() != 0 {
 					client.pool.clientQueue(client.pool.requestQueue.dequeue().(chan *ClientConn))
 				}

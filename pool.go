@@ -1,4 +1,4 @@
-package gRPC_pool
+package grpcpool
 
 import (
 	"context"
@@ -21,10 +21,10 @@ var (
 	ErrFullPool = errors.New("gRPC-pool: can't create ClientConn into a full pool")
 )
 
-// function type to create a new gRPC client
+// Factory function type to create a new gRPC client
 type Factory func() (*grpc.ClientConn, error)
 
-// Pool Options defined
+// Options Pool Options defined
 type Options struct {
 	Factory         Factory
 	PoolSize        int
@@ -34,6 +34,7 @@ type Options struct {
 	IdleTimeout     time.Duration
 }
 
+// Pool struct defined
 type Pool struct {
 	opt           *Options
 	poolSize      int
@@ -119,7 +120,6 @@ func (p *Pool) addIdleClient() {
 	if err != nil {
 		p.mu.Unlock()
 		panic(err)
-		return
 	}
 
 	p.poolSize++
@@ -205,7 +205,7 @@ func (p *Pool) getClient() *ClientConn {
 	var bestConn *ClientConn
 	for i, client := range p.clients {
 		if client.inUse < p.opt.UsedPreConn && (bestConn == nil || client.inUse < bestConn.inUse) {
-			if client.Active() {
+			if client.active() {
 				bestConn = p.clients[i]
 			} else {
 				go client.waitForReady()
@@ -219,11 +219,10 @@ func (p *Pool) getClient() *ClientConn {
 
 	newConn := p.addUsedClient()
 	if newConn != nil {
-		if newConn.Active() {
+		if newConn.active() {
 			return newConn
-		} else {
-			go newConn.waitForReady()
 		}
+		go newConn.waitForReady()
 	}
 
 	return nil
@@ -297,7 +296,7 @@ func (p *Pool) clientQueue(client chan *ClientConn) {
 			continue
 		}
 
-		if !conn.Active() {
+		if !conn.active() {
 			go conn.waitForReady()
 			break
 		}
@@ -340,7 +339,7 @@ func (p *Pool) Print() []byte {
 			Inuse:    conn.inUse,
 			TimeInit: conn.timeInitiated,
 			TimeUsed: conn.timeUsed,
-			Active:   conn.Active(),
+			Active:   conn.active(),
 		}
 		rep.Clients = append(rep.Clients, newClient)
 	}
