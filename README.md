@@ -23,17 +23,18 @@ import "github.com/AKA-bingo/grpcpool"
 
 ```go
 func main()  {
-  // Create a new pool
+	
+	// Create a new pool
 	pool, err := grpcpool.New(func() (*grpc.ClientConn, error) {
 		return grpc.Dial(addr, grpc.WithInsecure())
 	}, 2, 5, 1000, time.Hour, 0)
-  
-  // Error handle
-  if err != nil{
-    log.Printf("Create gRPC pool:%v\n", err)
-  }
-  
-  // Release pool
+
+	// Error handle
+	if err != nil{
+		log.Printf("Create gRPC pool:%v\n", err)
+	}
+
+	// Release pool
 	defer pool.Close()
 
 	// Print the pool info
