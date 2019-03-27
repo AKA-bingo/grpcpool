@@ -1,9 +1,9 @@
 ![grpcpool](https://img02.sogoucdn.com/app/a/100520146/0637C59BDB101E36875D81C63C067458)
 
-![Language](https://img.shields.io/badge/language-golang-blue.svg)
+[![GoDoc](https://godoc.org/github.com/AKA-bingo/grpcpool?status.svg)](https://godoc.org/github.com/AKA-bingo/grpcpool)
 [![Go Report Card](https://goreportcard.com/badge/github.com/AKA-bingo/grpcpool)](https://goreportcard.com/report/github.com/AKA-bingo/grpcpool)
 [![Build Status](https://travis-ci.org/AKA-bingo/grpcpool.svg?branch=master)](https://travis-ci.org/AKA-bingo/grpcpool)
-[![LICENSE](https://img.shields.io/badge/license-Apache2.0-orange.svg)](LICENSE)
+[![LICENSE](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE)
 
 grpcpool is used to manage and reuse gRPc connections. You can limit the Usage amount for per connections. 
 
