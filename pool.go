@@ -272,7 +272,6 @@ func (p *Pool) Get(ctx context.Context) (*ClientConn, error) {
 	}
 
 	client := make(chan *ClientConn, 1)
-	defer close(client)
 	p.clientQueue(client)
 
 	select {
@@ -302,12 +301,14 @@ func (p *Pool) clientQueue(client chan *ClientConn) {
 		}
 
 		client <- conn
+		close(client)
 		return
 	}
 
 	conn := p.getClient() // Get conn from the entire pool
 	if conn != nil {
 		client <- conn
+		close(client)
 		return
 	}
 

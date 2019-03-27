@@ -60,7 +60,9 @@ func (client *ClientConn) Put() {
 	client.mu.Unlock()
 
 	if !client.pool.requestQueue.isEmpty() && client.inUse < client.pool.opt.UsedPreConn {
-		client.pool.requestQueue.dequeue().(chan *ClientConn) <- client
+		clientChan := client.pool.requestQueue.dequeue().(chan *ClientConn)
+		clientChan <- client
+		close(clientChan)
 		return
 	}
 
