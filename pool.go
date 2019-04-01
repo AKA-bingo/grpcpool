@@ -14,11 +14,11 @@ import (
 // Error defined
 var (
 	// ErrClosed is the error when the client pool is closed
-	ErrClosed = errors.New("gRPC-pool: client pool is closed")
+	ErrClosed = errors.New("client pool is closed")
 	// ErrTimeout is the error when the client pool timed out
-	ErrTimeout = errors.New("gRPC-pool: client pool timed out")
+	ErrTimeout = errors.New("get client timed out")
 	// ErrFullPool is the error when the pool is already full
-	ErrFullPool = errors.New("gRPC-pool: can't create ClientConn into a full pool")
+	ErrFullPool = errors.New("can't create ClientConn into a full pool")
 )
 
 // Factory function type to create a new gRPC client
@@ -90,42 +90,38 @@ func (p *Pool) checkMinIdleConns() {
 // Add a new Client into the pool which about to be used
 func (p *Pool) addUsedClient() *ClientConn {
 	p.mu.Lock()
+	defer p.mu.Unlock()
 	if p.poolSize >= p.opt.PoolSize {
-		p.mu.Unlock()
 		return nil
 	}
 
 	conn, err := p.newClient()
 	if err != nil {
-		p.mu.Unlock()
 		log.Println(err)
 		return nil
 	}
 
 	p.poolSize++
 	p.clients = append(p.clients, conn)
-	p.mu.Unlock()
 	return conn
 }
 
 // addIdleClient will create a new IDLE conn into idleConnQueue if the queue not full
 func (p *Pool) addIdleClient() {
 	p.mu.Lock()
+	defer p.mu.Unlock()
 	if p.poolSize >= p.opt.PoolSize || p.idleConnQueue.size() >= p.opt.MinIdleConns {
-		p.mu.Unlock()
 		return
 	}
 
 	conn, err := p.newClient()
 	if err != nil {
-		p.mu.Unlock()
 		panic(err)
 	}
 
 	p.poolSize++
 	p.clients = append(p.clients, conn)
 	p.idleConnQueue.enqueue(conn)
-	p.mu.Unlock()
 }
 
 // newClient return a new conn by the factory
@@ -191,13 +187,12 @@ func (p *Pool) pushIdleClient(client *ClientConn) {
 		return
 	}
 
-	client.mu.Lock()
+	client.mu.RLock()
+	defer client.mu.RUnlock()
 	if client.inUse > 0 {
-		client.mu.Unlock()
 		return
 	}
 	p.idleConnQueue.enqueue(client)
-	client.mu.Unlock()
 }
 
 // Get the client from the pool
@@ -254,15 +249,15 @@ func (p *Pool) CloseClient(client *ClientConn) error {
 
 // removeClient will remove the client from the pool
 func (p *Pool) removeClient(client *ClientConn) {
-	p.mu.Lock()
 	for i, c := range p.clients {
 		if c == client {
+			p.mu.Lock()
 			p.clients = append(p.clients[:i], p.clients[i+1:]...)
 			p.poolSize--
+			p.mu.Unlock()
 			break
 		}
 	}
-	p.mu.Unlock()
 }
 
 // Get an Available client to use
